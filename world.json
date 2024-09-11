@@ -1,0 +1,15 @@
+{"world": {
+    "name": "World",
+    "description": "The world you live in.",
+    "players": [
+        {
+            "id": 1,
+            "name": "testplayer",
+            "location": {
+                "x": 0,
+                "y": 0
+            },
+            "inventory": []
+        }
+    ]
+}}
