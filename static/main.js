@@ -118,6 +118,7 @@ socket.on('adameva', (data) => {
 socket.on('player_update', (data) => {
     //response time
     response_time = Date.now() - time_2_response;
+    //
     player.set_position(data.position);
 });
 
@@ -133,9 +134,13 @@ socket.on('other_player_update', (data) => {
     }
 });
 
+// FPS
+
 let time = Date.now();
 let fps = 0;
 let fps_low = 1000;
+
+// Response Time
 
 let time_2_response = Date.now();
 let response_time = 0;
@@ -149,9 +154,17 @@ function animate() {
 
         if (player) {
             player.move();
+
+            // response time
+
             time_2_response = Date.now();
+
+            //
+            
             player.update_position();
             update_map(world, player);
+            
+            // FPS
 
             let delatTime = Date.now() - time;
             let new_fps = 1000 / delatTime;
@@ -163,7 +176,10 @@ function animate() {
             fps = new_fps;
 
             time = Date.now();
+
             document.getElementById('fps').innerText = `FPS: ${fps.toFixed(2)} | FPS Low: ${fps_low.toFixed(2)} | Response Time: ${response_time}ms`;
+
+            //
         }
     
     }
