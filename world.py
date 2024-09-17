@@ -90,43 +90,24 @@ class World:
     
     def move_player(self, sid, direction: dict):
         players: dict = self.players
-
         player = players[sid]
 
         x = player["position"]["x"]
         z = player["position"]["z"]
 
-        print(x, z, direction)
+        if direction['vectorZ'] != 0:
+            z += direction['vectorZ'] * player["velocity"]
+        if direction['vectorX'] != 0:
+            x += direction['vectorX'] * player["velocity"]
 
-        if(direction['vectorZ'] > 0):
-            z += self.MOVEMENT
-        elif(direction['vectorZ'] < 0):
-            z -= self.MOVEMENT
-
-        if(direction['vectorX'] > 0):
-            x += self.MOVEMENT
-        elif(direction['vectorX'] < 0):
-            x -= self.MOVEMENT
-
-        player["position"]["x"] = x
-        player["position"]["z"] = z
-
-        if (x < 0):
-            player["position"]["x"] = 0
-
-        if (x > self.WORLD_SIZE):
-            player["position"]["x"] = self.WORLD_SIZE
-
-        if (z < 0):
-            player["position"]["z"] = 0
-        
-        if (z > self.WORLD_SIZE):
-            player["position"]["z"] = self.WORLD_SIZE
+        player["position"]["x"] = max(0, min(x, self.WORLD_SIZE))
+        player["position"]["z"] = max(0, min(z, self.WORLD_SIZE))
 
         players[sid] = player
 
-        print(x, z)
+        # Update world matrix to reflect player position
         self.world_matrix[int(x)][int(z)] = "player"
+
 
     def random_trees(self):
         trees = []

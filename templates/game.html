@@ -18,11 +18,18 @@
         }
 
         /* HUD Styling */
+        .base-hud {
+            position: absolute;
+            top: 5px; /* Abstand vom oberen Rand des Bildschirms */
+            left: 5px; /* Abstand vom linken Rand des Bildschirms */
+
+            color: white;
+        }
         .hud {
             position: absolute;
             top: 20px; /* Abstand vom oberen Rand des Bildschirms */
             left: 20px; /* Abstand vom linken Rand des Bildschirms */
-            background-color: rgba(0, 0, 0, 0.5); /* Halbdurchsichtiges Schwarz */
+            /* background-color: rgba(0, 0, 0, 0.5); Halbdurchsichtiges Schwarz */
             color: white;
             padding: 10px;
             border-radius: 10px;
@@ -33,10 +40,12 @@
 <body>
 
     <canvas id="game"></canvas>
+    <p class="base-hud" id="fps">FPS: 0</p>
 
     <!-- HUD Element -->
     <div class="hud">
         <p>Test</p>
+        
     </div>
 
     <div id="map" class="map"></div>
