@@ -42,21 +42,26 @@ class PlayerSelf extends Player {
         super(scene, player);
 
         this.camera = camera;
+
+        this.cam_offsetY = 10;
+        this.cam_offsetZ = 10;
     }
 
     set_position(position) {
-        const cam_offsetY = 10;
-        const cam_offsetZ = 10;
 
         const { x, y, z } = this.position;
 
         this.position = position;
 
+        
+
+    }
+
+    update_position() {
         this.cube.position.set(this.position.x, this.position.y, this.position.z);
 
-        this.camera.position.set(this.position.x, this.position.y + cam_offsetY, this.position.z + cam_offsetZ);
+        this.camera.position.set(this.position.x, this.position.y + this.cam_offsetY, this.position.z + this.cam_offsetZ);
         this.camera.lookAt(this.position.x, this.position.y, this.position.z);
-
     }
 
     move(vectorX, vectorY, vectorZ) {
@@ -132,6 +137,11 @@ function animate() {
     requestAnimationFrame(animate);
 
     renderer.render(scene, camera);
+    
+    if (player) {
+        console.log('Player:', player);
+        player.update_position();
+    }
 }
 
 animate();
@@ -159,9 +169,54 @@ document.addEventListener('keydown', (event) => {
 
     player.move(vectorX, 0, vectorZ);
 
+    update_map(world, player);
+
     console.log('Camera position:', player.get_camera_position());
 });
 
+function update_map(world, player) {
+    const map = document.getElementById('map');
+    map.innerHTML = ''; // Leert die Map für eine frische Darstellung
+
+    const world_size = 225;
+
+    // Skalierungsfaktor der Karte basierend auf der Weltgröße und der Kartengröße
+    const scale_factor = map.offsetWidth / world_size;
+
+    // Spieler auf der Karte darstellen
+    const player_dot = document.createElement('div');
+    player_dot.classList.add('player-dot');
+    player_dot.style.left = (player.position.x * scale_factor) + 'px';
+    player_dot.style.top = (player.position.z * scale_factor) + 'px';
+    map.appendChild(player_dot);
+
+    // Andere Spieler auf der Karte darstellen
+    Object.keys(players).forEach(player_ => {
+        const other_player_dot = document.createElement('div');
+        other_player_dot.classList.add('other-player-dot');
+        other_player_dot.style.left = (players[player_].position.x * scale_factor) + 'px';
+        other_player_dot.style.top = (players[player_].position.z * scale_factor) + 'px';
+        map.appendChild(other_player_dot);
+    });
+
+    // Bäume auf der Karte darstellen
+    world.trees.forEach(tree => {
+        const tree_dot = document.createElement('div');
+        tree_dot.classList.add('tree-dot');
+        tree_dot.style.left = (tree.position.x * scale_factor) + 'px';
+        tree_dot.style.top = (tree.position.z * scale_factor) + 'px';
+        map.appendChild(tree_dot);
+    });
+
+    // Steine auf der Karte darstellen
+    world.rocks.forEach(rock => {
+        const rock_dot = document.createElement('div');
+        rock_dot.classList.add('rock-dot');
+        rock_dot.style.left = (rock.position.x * scale_factor) + 'px';
+        rock_dot.style.top = (rock.position.z * scale_factor) + 'px';
+        map.appendChild(rock_dot);
+    });
+}
 
 
 
@@ -198,29 +253,29 @@ function make_tree(tree_) {
 
     const tree = new THREE.Group();
 
-    const trunk_geometry = new THREE.CylinderGeometry(0.5, 0.5, height);
+    const trunk_geometry = new THREE.CylinderGeometry(2, 2, height);
     const trunk_material = new THREE.MeshBasicMaterial({ color: 0x8B4513 });
     const trunk = new THREE.Mesh(trunk_geometry, trunk_material);
     tree.add(trunk);
 
     let color_leaves = 0x00ff00;
 
-    let leaves_geometry = new THREE.SphereGeometry(2);
+    let leaves_geometry = new THREE.SphereGeometry(8);
 
     if (tree_.type === 'oak') {
         color_leaves = 0x00ff00;
-        leaves_geometry = new THREE.SphereGeometry(2);
+        leaves_geometry = new THREE.SphereGeometry(8);
     } else if (tree_.type === 'pine') {
         color_leaves = 0x069460;
-        leaves_geometry = new THREE.ConeGeometry(2, 4);
+        leaves_geometry = new THREE.ConeGeometry(8, 16, 8);
     } else if (tree_.type === 'birch') {
         color_leaves = 0x8fa277;
-        leaves_geometry = new THREE.SphereGeometry(2);
+        leaves_geometry = new THREE.SphereGeometry(8);
     }
 
     const leaves_material = new THREE.MeshBasicMaterial({ color: color_leaves });
     const leaves = new THREE.Mesh(leaves_geometry, leaves_material);
-    leaves.position.y = 3;
+    leaves.position.y = height / 2 + 8;
     tree.add(leaves);
 
     tree.position.set(x, y, z);  // Set tree position
@@ -232,7 +287,7 @@ function make_rock(rock_) {
 
     const rock = new THREE.Group();
 
-    const rock_geometry = new THREE.SphereGeometry(2);
+    const rock_geometry = new THREE.SphereGeometry(4);
     const rock_material = new THREE.MeshBasicMaterial({ color: 0x696969 });
     const rock_mesh = new THREE.Mesh(rock_geometry, rock_material);
     rock.add(rock_mesh);

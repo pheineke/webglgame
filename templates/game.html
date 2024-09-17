@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Game</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='map.css') }}">
     <style>
         body {
             margin: 0;
@@ -15,10 +16,31 @@
             margin: 0 auto;
             background-color: #f0f0f0;
         }
+
+        /* HUD Styling */
+        .hud {
+            position: absolute;
+            top: 20px; /* Abstand vom oberen Rand des Bildschirms */
+            left: 20px; /* Abstand vom linken Rand des Bildschirms */
+            background-color: rgba(0, 0, 0, 0.5); /* Halbdurchsichtiges Schwarz */
+            color: white;
+            padding: 10px;
+            border-radius: 10px;
+            font-family: Arial, sans-serif;
+        }
     </style>
 </head>
 <body>
+
     <canvas id="game"></canvas>
+
+    <!-- HUD Element -->
+    <div class="hud">
+        <p>Test</p>
+    </div>
+
+    <div id="map" class="map"></div>
+
     <!-- Socket.IO CDN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.0/socket.io.min.js"></script>
     <!-- Dein eigenes Skript -->
