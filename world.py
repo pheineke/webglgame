@@ -54,6 +54,7 @@ class World:
                 "y": 0,
                 "z": random.randint(0, self.WORLD_SIZE),
             },
+            "velocity": self.MOVEMENT,
             "inventory": []
         }
 
@@ -80,7 +81,7 @@ class World:
     def get_world(self) -> dict:
         return self.world_data
     
-    def move_player(self, sid, direction: str):
+    def move_player(self, sid, direction: dict):
         players: dict = self.players
 
         player = players[sid]
@@ -88,23 +89,36 @@ class World:
         x = player["position"]["x"]
         z = player["position"]["z"]
 
-        if (direction == "forward"):
-            player["position"]["z"] -= self.MOVEMENT
-        elif (direction == "backward"):
-            player["position"]["z"] += self.MOVEMENT
-        elif (direction == "left"):
-            player["position"]["x"] -= self.MOVEMENT
-        elif (direction == "right"):
-            player["position"]["x"] += self.MOVEMENT
+        print(x, z, direction)
+
+        if(direction['vectorZ'] > 0):
+            z += self.MOVEMENT
+        elif(direction['vectorZ'] < 0):
+            z -= self.MOVEMENT
+
+        if(direction['vectorX'] > 0):
+            x += self.MOVEMENT
+        elif(direction['vectorX'] < 0):
+            x -= self.MOVEMENT
+
+
+
+        if (x < 0):
+            player["position"]["x"] = 0
 
         if (x > self.WORLD_SIZE):
             player["position"]["x"] = self.WORLD_SIZE
+
+        if (z < 0):
+            player["position"]["z"] = 0
         
         if (z > self.WORLD_SIZE):
             player["position"]["z"] = self.WORLD_SIZE
         
+        player["position"]["x"] = x
+        player["position"]["z"] = z
+
         players[sid] = player
-        
 
     def random_trees(self):
         trees = []

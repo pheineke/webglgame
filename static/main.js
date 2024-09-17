@@ -2,13 +2,15 @@ import * as THREE from 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/thr
 
 
 class Player {
-    constructor(scene, camera, player) {
+    constructor(scene, player) {
         this.id = player.id;
         this.name = player.name;
 
         this.color = player.color;
 
         this.position = player.position;
+
+        this.velocity = player.velocity;
 
         this.inventory = player.inventory;
 
@@ -17,10 +19,29 @@ class Player {
         this.cube = new THREE.Mesh(this.mesh, this.material);
         this.cube.position.set(this.position.x, this.position.y, this.position.z);
 
-        this.camera = camera;
-
         scene.add(this.cube);
 
+    }
+
+    set_position(position) {
+
+        const { x, y, z } = this.position;
+
+        this.position = position;
+
+        this.cube.position.set(this.position.x, this.position.y, this.position.z);
+    }
+    
+    get_position() {
+        return this.position; 
+    }
+}
+
+class PlayerSelf extends Player {
+    constructor(scene, camera, player) {
+        super(scene, player);
+
+        this.camera = camera;
     }
 
     set_position(position) {
@@ -38,23 +59,18 @@ class Player {
 
     }
 
-    move(direction) {
-        socket.emit('move', { id: this.id, direction: direction });
-    }
-
-    get_position() {
-        return this.position; 
+    move(vectorX, vectorY, vectorZ) {
+        socket.emit('move', { id: this.id, direction: { vectorX: vectorX, vectorY: vectorY, vectorZ: vectorZ } });
     }
 
     get_camera_position() {
         return this.camera.position;
     }
-
 }
 
 
 const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 70);
 const renderer = new THREE.WebGLRenderer({
     canvas: document.querySelector('canvas')
 });
@@ -87,7 +103,7 @@ socket.on('adamah', (data) => {
 socket.on('adameva', (data) => {
     console.log('adameva:', data);
     console.log('data:', data);
-    player = new Player(scene, camera, data);
+    player = new PlayerSelf(scene, camera, data);
     console.log('Player:', player);
 
 });
@@ -101,12 +117,12 @@ socket.on('player_update', (data) => {
 socket.on('other_player_update', (data) => {
     console.log('other_player_update:', data);
 
-    for (const player_ of data.keys()) {
+    for (const player_ of Object.keys(data)) {
         if (player_ !== player.id) {
             if (players[player_]) { // If player exists
                 players[player_].set_position(data[player_].position);
             } else {
-                players[player_] = new Player(scene, camera, data[player_]);
+                players[player_] = new Player(scene, data[player_]);
             }
         }
     }
@@ -125,18 +141,23 @@ animate();
 /// movement controls
 
 document.addEventListener('keydown', (event) => {
+    let vectorX = 0;
+    let vectorZ = 0;
+
     if (event.key === 'w') {
-        player.move('forward');
+        vectorZ -= 1;
     }
     if (event.key === 's') {
-        player.move('backward');
+        vectorZ += 1;
     }
     if (event.key === 'a') {
-        player.move('left');
+        vectorX -= 1;
     }
     if (event.key === 'd') {
-        player.move('right');
+        vectorX += 1;
     }
+
+    player.move(vectorX, 0, vectorZ);
 
     console.log('Camera position:', player.get_camera_position());
 });
