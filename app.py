@@ -3,7 +3,8 @@ from flask_socketio import *
 import requests
 import random
 
-from world import World
+from resources.world import World
+from resources.player import Player
 
 app = Flask(__name__)
 app.secret_key = '1234'
@@ -22,8 +23,11 @@ def connect():
 
     WORLD.add_player(sid=sid)
 
+    player : Player = WORLD.get_player(sid)
+    player_str = player.to_json()
+
     emit('adamah', WORLD.get_world())
-    emit('adameva', WORLD.get_player(sid))
+    emit('adameva', player_str)
 
     print('Client connected')
 
@@ -35,9 +39,14 @@ def disconnect():
 @socketio.on('move')
 def move(data):
     sid = request.sid
+
     WORLD.move_player(sid, data['direction'])
 
-    emit('player_update', WORLD.get_player(sid))
+    player : Player = WORLD.get_player(sid)
+
+    player_str = player.to_json()
+
+    emit('player_update', player_str)
     emit('other_player_update', WORLD.get_players(), broadcast=True)
 
 

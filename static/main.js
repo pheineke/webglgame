@@ -10,6 +10,8 @@ class Player {
 
         this.position = player.position;
 
+        this.velocityVector = player.velocityVector;
+
         this.velocity = player.velocity;
 
         this.inventory = player.inventory;
@@ -20,21 +22,23 @@ class Player {
         this.cube.position.set(this.position.x, this.position.y, this.position.z);
 
         scene.add(this.cube);
-
     }
 
     set_position(position) {
-
-        const { x, y, z } = this.position;
-
         this.position = position;
+    }
 
+    update_position() {
         this.cube.position.set(this.position.x, this.position.y, this.position.z);
     }
     
     get_position() {
         return this.position; 
     }
+
+    set_velocityVec_x(x) { this.velocityVector.x = x; }
+    set_velocityVec_y(y) { this.velocityVector.y = y; }
+    set_velocityVec_z(z) { this.velocityVector.z = z; }
 }
 
 class PlayerSelf extends Player {
@@ -45,32 +49,20 @@ class PlayerSelf extends Player {
 
         this.cam_offsetY = 10;
         this.cam_offsetZ = 10;
-
-        this.movement = { x : 0, y : 0, z : 0 };
     }
 
     set_position(position) {
-
-        const { x, y, z } = this.position;
-
         this.position = position;
-
     }
 
     update_position() {
         this.cube.position.set(this.position.x, this.position.y, this.position.z);
-
         this.camera.position.set(this.position.x, this.position.y + this.cam_offsetY, this.position.z + this.cam_offsetZ);
         this.camera.lookAt(this.position.x, this.position.y, this.position.z);
     }
 
-    set_movement_x(x) { this.movement.x = x; }
-    set_movement_y(y) { this.movement.y = y; }
-    set_movement_z(z) { this.movement.z = z; }
-
-
     move() {
-        socket.emit('move', { id: this.id, direction: { vectorX: this.movement.x, vectorY: this.movement.y, vectorZ: this.movement.z } });
+        socket.emit('move', { id: this.id, direction: { x: this.velocityVector.x, y: this.velocityVector.y, z: this.velocityVector.z } });
     }
 
     get_camera_position() {
@@ -109,9 +101,17 @@ socket.on('adamah', (data) => {
     generate_world(scene, world);
 });
 
-socket.on('adameva', (data) => {
-    player = new PlayerSelf(scene, camera, data);
+socket.on('adameva', (player_data) => {
+    console.log(player_data);
+    console.log("Player data:", player_data.position);
 
+    if (player_data.position === undefined) {
+        return;
+    } else {
+        
+        player = new PlayerSelf(scene, camera, player_data);
+        run = true;
+    }
 });
 ////////////////////////
 
@@ -134,6 +134,9 @@ socket.on('other_player_update', (data) => {
     }
 });
 
+//
+let run = false;
+
 // FPS
 
 let time = Date.now();
@@ -147,77 +150,66 @@ let response_time = 0;
 
 function animate() {
     requestAnimationFrame(animate);
-
     renderer.render(scene, camera);
-    
-    if (socket.connected) {
 
-        if (player) {
-            player.move();
+    if (socket.connected && player) {  // Check if player is not null
 
-            // response time
+        player.move();
+        time_2_response = Date.now();  // Response time
 
-            time_2_response = Date.now();
+        player.update_position();
+        update_map(world, player);
 
-            //
-            
-            player.update_position();
-            update_map(world, player);
-            
-            // FPS
+        // FPS
+        let deltaTime = Date.now() - time;
+        let new_fps = 1000 / deltaTime;
 
-            let delatTime = Date.now() - time;
-            let new_fps = 1000 / delatTime;
-            
-            if (new_fps < fps_low && new_fps > 4) {
-                fps_low = new_fps;
-            }
-
-            fps = new_fps;
-
-            time = Date.now();
-
-            document.getElementById('fps').innerText = `FPS: ${fps.toFixed(2)} | FPS Low: ${fps_low.toFixed(2)} | Response Time: ${response_time}ms`;
-
-            //
+        if (new_fps < fps_low && new_fps > 4) {
+            fps_low = new_fps;
         }
-    
-    }
-    
 
-    
+        fps = new_fps;
+        time = Date.now();
+
+        document.getElementById('fps').innerText = `FPS: ${fps.toFixed(2)} | FPS Low: ${fps_low.toFixed(2)} | Response Time: ${response_time}ms`;
+    }
 }
 
-animate();
 
+animate();
 
 
 
 /// movement controls
 
 document.addEventListener('keydown', (event) => {
+    if (!player) return;  // Check if player is null
+
     if (event.key === 'w') {
-        player.set_movement_z(-1);
+        player.set_velocityVec_z(-1);
     }
     if (event.key === 's') {
-        player.set_movement_z(1);
+        player.set_velocityVec_z(1);
     }
     if (event.key === 'a') {
-        player.set_movement_x(-1);
+        player.set_velocityVec_x(-1);
     }
     if (event.key === 'd') {
-        player.set_movement_x(1);
+        player.set_velocityVec_x(1);
     }
 });
 
 document.addEventListener('keyup', (event) => {
+    if (!player) return;  // Check if player is null
+
     if (event.key === 'w' || event.key === 's') {
-        player.set_movement_z(0);
+        player.set_velocityVec_z(0);
     }
     if (event.key === 'a' || event.key === 'd') {
-        player.set_movement_x(0);
+        player.set_velocityVec_x(0);
     }
 });
+
 
 function update_map(world, player) {
     const map = document.getElementById('map');
