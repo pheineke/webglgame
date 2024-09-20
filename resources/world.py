@@ -57,6 +57,8 @@ class World:
 
         players[sid] = player
 
+        return player
+
     def remove_player(self, sid):
         players: dict = self.players
 
