@@ -1,0 +1,30 @@
+body {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+}
+
+canvas {
+    display: block;
+    margin: 0 auto;
+    background-color: #f0f0f0;
+}
+
+/* HUD Styling */
+.base-hud {
+    position: absolute;
+    top: 5px; /* Abstand vom oberen Rand des Bildschirms */
+    left: 5px; /* Abstand vom linken Rand des Bildschirms */
+
+    color: white;
+}
+.hud {
+    position: absolute;
+    top: 20px; /* Abstand vom oberen Rand des Bildschirms */
+    left: 20px; /* Abstand vom linken Rand des Bildschirms */
+    /* background-color: rgba(0, 0, 0, 0.5); Halbdurchsichtiges Schwarz */
+    color: white;
+    padding: 10px;
+    border-radius: 10px;
+    font-family: Arial, sans-serif;
+}

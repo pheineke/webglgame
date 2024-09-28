@@ -10,6 +10,8 @@ app = Flask(__name__)
 app.secret_key = '1234'
 socketio = SocketIO(app)
 
+PORT = 5000
+
 ### FLASK
 
 @app.route('/', methods=['GET', 'POST'])
@@ -27,4 +29,4 @@ if __name__ == '__main__':
         TEMPLATES_AUTO_RELOAD=True
     )
     
-    app.run(host='0.0.0.0', port=8000, debug=True)
+    app.run(host='0.0.0.0', port=PORT, debug=True)

@@ -36,9 +36,9 @@ class Player {
         return this.position; 
     }
 
-    set_velocityVec_x(x) { this.velocityVector.x = x; }
-    set_velocityVec_y(y) { this.velocityVector.y = y; }
-    set_velocityVec_z(z) { this.velocityVector.z = z; }
+    set_velocityVec_x(x) { this.velocityVector.x += x; }
+    set_velocityVec_y(y) { this.velocityVector.y += y; }
+    set_velocityVec_z(z) { this.velocityVector.z += z; }
 }
 
 class PlayerSelf extends Player {
@@ -95,15 +95,18 @@ let player = null;
 const socket = io();
 
 /// INIT WORLD AND PLAYER
-socket.on('adamah', (data) => {
-    world = data;
+socket.on('init_world', (world_data) => {
+
+    world = world_data.world;
+
+    console.log("World data:", world);
 
     generate_world(scene, world);
 });
 
-socket.on('adameva', (player_data) => {
+socket.on('player_connected_you', (player_data) => {
     console.log(player_data);
-    console.log("Player data:", player_data.position);
+    console.log("Player position:", player_data.position);
 
     if (player_data.position === undefined) {
         return;
@@ -151,8 +154,12 @@ let response_time = 0;
 function animate() {
     requestAnimationFrame(animate);
     renderer.render(scene, camera);
+    
+    console.log("Socket ",socket.connected)
+    console.log("Player",player)
 
-    if (socket.connected && player) {  // Check if player is not null
+    if (socket.connected) {  // Check if player is not null
+        console.log("Player position: ", player.get_position());
 
         player.move();
         time_2_response = Date.now();  // Response time
@@ -197,6 +204,8 @@ document.addEventListener('keydown', (event) => {
     if (event.key === 'd') {
         player.set_velocityVec_x(1);
     }
+
+    console.log("Velocity Vector: ", player.velocityVector);
 });
 
 document.addEventListener('keyup', (event) => {
